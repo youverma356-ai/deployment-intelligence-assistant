@@ -33,6 +33,14 @@ This app uses AI to compress all of that from hours to seconds.
 
 ---
 
+## UX features
+
+- ⏳ Loading spinner while the AI generates a response, so you always know it's working
+- 📋 One-click copy button on every AI output
+- ⬇️ Export any AI output (logs, checklists, post-mortems, etc.) directly as a PDF
+
+---
+
 ## How to use it
 
 1. Open the [live app](https://youverma356-ai.github.io/deployment-intelligence-assistant)
@@ -48,6 +56,7 @@ This app uses AI to compress all of that from hours to seconds.
 |---|---|
 | Frontend | HTML, CSS, JavaScript (no framework) |
 | AI Model | Llama 3.3 70B via Groq API |
+| PDF Export | jsPDF |
 | Deployment | GitHub Pages (free) |
 
 ---
@@ -66,13 +75,13 @@ I wanted to demonstrate two things at once:
 - How to write structured prompts that produce consistent, useful output
 - How DevOps teams handle incidents — the full lifecycle from detection to post-mortem
 - How to deploy a web app using GitHub Pages
+- How to design good loading and feedback states (spinners, copy confirmations) for AI-powered tools
 
 ---
 
 ## Future improvements
 
 - [ ] Add file upload support for logs (drag and drop)
-- [ ] Export post-mortem reports as PDF
 - [ ] Connect to real logging tools like Datadog or Splunk
 - [ ] Add user authentication for team use
 - [ ] Save and search past analyses
