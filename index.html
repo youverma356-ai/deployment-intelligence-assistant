@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Deployment Intelligence Assistant</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
@@ -45,6 +46,13 @@
     .api-bar { background: #fffbe6; border: 1px solid #f5d000; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
     .api-bar input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; }
     .api-bar label { font-size: 13px; color: #666; white-space: nowrap; margin: 0; }
+
+    .spinner { display: none; width: 22px; height: 22px; border: 3px solid #e0e0e0; border-top: 3px solid #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 16px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .output-actions { display: none; gap: 8px; margin-top: 14px; }
+    .action-btn { padding: 7px 14px; font-size: 12px; font-weight: 600; background: white; color: #1a1a1a; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+    .action-btn:hover { background: #f0f0f0; }
   </style>
 </head>
 <body>
@@ -80,7 +88,13 @@
     <label>Your logs: <button class="sample-link" onclick="load('logs')">load example</button></label>
     <textarea id="input-logs" placeholder="Paste deployment logs here..."></textarea>
     <button class="run-btn" onclick="analyze('logs')">Analyze Logs →</button>
-    <div class="output" id="out-logs"><div class="output-label">AI Analysis</div><div class="output-text" id="res-logs"></div></div>
+    <div class="spinner" id="spinner-logs"></div>
+    <div class="output" id="out-logs"><div class="output-label">AI Analysis</div><div class="output-text" id="res-logs"></div>
+      <div class="output-actions" id="actions-logs">
+        <button class="action-btn" onclick="copyOutput('logs')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('logs')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- INCIDENT REPORT -->
@@ -90,7 +104,13 @@
     <label>Incident report: <button class="sample-link" onclick="load('incident')">load example</button></label>
     <textarea id="input-incident" placeholder="Paste incident report here..."></textarea>
     <button class="run-btn" onclick="analyze('incident')">Analyze Report →</button>
-    <div class="output" id="out-incident"><div class="output-label">AI Analysis</div><div class="output-text" id="res-incident"></div></div>
+    <div class="spinner" id="spinner-incident"></div>
+    <div class="output" id="out-incident"><div class="output-label">AI Analysis</div><div class="output-text" id="res-incident"></div>
+      <div class="output-actions" id="actions-incident">
+        <button class="action-btn" onclick="copyOutput('incident')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('incident')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- ARCHITECTURE -->
@@ -100,7 +120,13 @@
     <label>Architecture description: <button class="sample-link" onclick="load('arch')">load example</button></label>
     <textarea id="input-arch" placeholder="Describe your architecture here..."></textarea>
     <button class="run-btn" onclick="analyze('arch')">Review Architecture →</button>
-    <div class="output" id="out-arch"><div class="output-label">AI Analysis</div><div class="output-text" id="res-arch"></div></div>
+    <div class="spinner" id="spinner-arch"></div>
+    <div class="output" id="out-arch"><div class="output-label">AI Analysis</div><div class="output-text" id="res-arch"></div>
+      <div class="output-actions" id="actions-arch">
+        <button class="action-btn" onclick="copyOutput('arch')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('arch')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- ROOT CAUSE -->
@@ -110,7 +136,13 @@
     <label>What are you seeing: <button class="sample-link" onclick="load('rootcause')">load example</button></label>
     <textarea id="input-rootcause" placeholder="Describe the symptoms here..."></textarea>
     <button class="run-btn" onclick="analyze('rootcause')">Find Root Cause →</button>
-    <div class="output" id="out-rootcause"><div class="output-label">AI Analysis</div><div class="output-text" id="res-rootcause"></div></div>
+    <div class="spinner" id="spinner-rootcause"></div>
+    <div class="output" id="out-rootcause"><div class="output-label">AI Analysis</div><div class="output-text" id="res-rootcause"></div>
+      <div class="output-actions" id="actions-rootcause">
+        <button class="action-btn" onclick="copyOutput('rootcause')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('rootcause')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- CHECKLIST -->
@@ -134,7 +166,13 @@
     <label>What are you deploying: <button class="sample-link" onclick="load('checklist')">load example</button></label>
     <textarea id="input-checklist" placeholder="Describe the change you're deploying..."></textarea>
     <button class="run-btn" onclick="analyze('checklist')">Generate Checklist →</button>
-    <div class="output" id="out-checklist"><div class="output-label">AI Checklist</div><div class="output-text" id="res-checklist"></div></div>
+    <div class="spinner" id="spinner-checklist"></div>
+    <div class="output" id="out-checklist"><div class="output-label">AI Checklist</div><div class="output-text" id="res-checklist"></div>
+      <div class="output-actions" id="actions-checklist">
+        <button class="action-btn" onclick="copyOutput('checklist')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('checklist')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- ROLLBACK -->
@@ -144,7 +182,13 @@
     <label>Deployment details: <button class="sample-link" onclick="load('rollback')">load example</button></label>
     <textarea id="input-rollback" placeholder="Describe what was deployed..."></textarea>
     <button class="run-btn" onclick="analyze('rollback')">Generate Rollback Plan →</button>
-    <div class="output" id="out-rollback"><div class="output-label">Rollback Plan</div><div class="output-text" id="res-rollback"></div></div>
+    <div class="spinner" id="spinner-rollback"></div>
+    <div class="output" id="out-rollback"><div class="output-label">Rollback Plan</div><div class="output-text" id="res-rollback"></div>
+      <div class="output-actions" id="actions-rollback">
+        <button class="action-btn" onclick="copyOutput('rollback')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('rollback')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
   <!-- POST-MORTEM -->
@@ -154,7 +198,13 @@
     <label>Your raw notes: <button class="sample-link" onclick="load('postmortem')">load example</button></label>
     <textarea id="input-postmortem" placeholder="Paste messy notes, slack messages, timeline... anything"></textarea>
     <button class="run-btn" onclick="analyze('postmortem')">Generate Post-Mortem →</button>
-    <div class="output" id="out-postmortem"><div class="output-label">Post-Mortem Report</div><div class="output-text" id="res-postmortem"></div></div>
+    <div class="spinner" id="spinner-postmortem"></div>
+    <div class="output" id="out-postmortem"><div class="output-label">Post-Mortem Report</div><div class="output-text" id="res-postmortem"></div>
+      <div class="output-actions" id="actions-postmortem">
+        <button class="action-btn" onclick="copyOutput('postmortem')">📋 Copy</button>
+        <button class="action-btn" onclick="exportPDF('postmortem')">⬇️ Export PDF</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -273,8 +323,13 @@ async function analyze(id) {
 
   const outDiv = document.getElementById('out-' + id);
   const resEl = document.getElementById('res-' + id);
+  const spinnerEl = document.getElementById('spinner-' + id);
+  const actionsEl = document.getElementById('actions-' + id);
+
   outDiv.style.display = 'block';
-  resEl.textContent = 'AI is thinking...';
+  resEl.textContent = '';
+  actionsEl.style.display = 'none';
+  spinnerEl.style.display = 'block';
 
   let prompt;
   if (id === 'checklist') {
@@ -299,11 +354,34 @@ async function analyze(id) {
       })
     });
     const data = await res.json();
+    spinnerEl.style.display = 'none';
     if (data.error) { resEl.textContent = 'Error: ' + data.error.message; return; }
     resEl.textContent = data.choices[0].message.content;
+    actionsEl.style.display = 'flex';
   } catch (err) {
+    spinnerEl.style.display = 'none';
     resEl.textContent = 'Something went wrong: ' + err.message;
   }
+}
+
+function copyOutput(id) {
+  const text = document.getElementById('res-' + id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#actions-' + id + ' .action-btn');
+    const original = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+}
+
+function exportPDF(id) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const text = document.getElementById('res-' + id).innerText;
+  const lines = doc.splitTextToSize(text, 180);
+  doc.setFontSize(11);
+  doc.text(lines, 15, 20);
+  doc.save(id + '-report.pdf');
 }
 </script>
 </body>
